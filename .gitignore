@@ -1,0 +1,13 @@
+# Sekrety wdrożenia
+.env
+
+# Treści generowane w czasie działania witryny
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/upgrade-temp-backup/
+wp-content/languages/
+wp-content/cache/
+wp-content/debug.log
+
+# .htaccess jest generowany przez docker/entrypoint.sh
+/.htaccess
