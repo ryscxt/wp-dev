@@ -220,9 +220,9 @@ define( 'FORCE_SSL_ADMIN', wpdok_bool( 'FORCE_SSL_ADMIN', 'https' === $wpdok_sch
  * Debugowanie
  * -------------------------------------------------------------------------- */
 
-define( 'WP_DEBUG', wpdok_bool( array( 'WORDPRESS_DEBUG', 'WP_DEBUG' ), false ) );
-define( 'WP_DEBUG_LOG', wpdok_bool( 'WP_DEBUG_LOG', false ) );
-define( 'WP_DEBUG_DISPLAY', wpdok_bool( 'WP_DEBUG_DISPLAY', false ) );
+define( 'WP_DEBUG', wpdok_bool( array( 'WORDPRESS_DEBUG', 'WP_DEBUG' ), true ) );
+define( 'WP_DEBUG_LOG', wpdok_bool( 'WP_DEBUG_LOG', true ) );
+define( 'WP_DEBUG_DISPLAY', wpdok_bool( 'WP_DEBUG_DISPLAY', true ) );
 define( 'SCRIPT_DEBUG', wpdok_bool( 'SCRIPT_DEBUG', false ) );
 
 if ( ! WP_DEBUG_DISPLAY ) {
