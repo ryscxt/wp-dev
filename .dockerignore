@@ -1,0 +1,7 @@
+.git
+.github
+.env
+*.log
+*.sql
+node_modules
+wp-content/uploads

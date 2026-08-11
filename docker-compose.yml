@@ -1,0 +1,86 @@
+services:
+  wordpress:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # --- Adres witryny ---------------------------------------------------
+      # WP_DOMAIN  - domena wpisana w Dokploy (bez schematu i bez ścieżki)
+      # WP_PATH    - ścieżka domeny w Dokploy, np. /przechowuj
+      #              (puste = witryna w katalogu głównym domeny)
+      # WP_STRIP_PREFIX - ustaw na "true" tylko wtedy, gdy w Dokploy włączyłeś
+      #              "Strip Path" dla tej domeny. Zalecane: pozostaw wyłączone
+      #              w Dokploy i tutaj "false".
+      WP_DOMAIN: ${WP_DOMAIN}
+      WP_PATH: ${WP_PATH:-}
+      WP_STRIP_PREFIX: ${WP_STRIP_PREFIX:-false}
+      WP_SCHEME: ${WP_SCHEME:-https}
+
+      # --- Baza danych -----------------------------------------------------
+      WORDPRESS_DB_HOST: wp_db
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+
+      # --- Klucze i sole ----------------------------------------------------
+      # Wygeneruj na https://api.wordpress.org/secret-key/1.1/salt/ i wstaw do
+      # zmiennych środowiskowych projektu, albo ustaw jeden WP_SALT_SECRET.
+      WP_SALT_SECRET: ${WP_SALT_SECRET:-}
+
+      # --- Pozostałe --------------------------------------------------------
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-0}
+      WP_MEMORY_LIMIT: ${WP_MEMORY_LIMIT:-256M}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_}
+      # Opcjonalne dodatkowe stałe PHP, np.:
+      #   WORDPRESS_CONFIG_EXTRA: |
+      #     define('WP_POST_REVISIONS', 5);
+      WORDPRESS_CONFIG_EXTRA: ${WORDPRESS_CONFIG_EXTRA:-}
+    volumes:
+      # Kod WordPressa pochodzi z obrazu (czyli z repozytorium). Utrwalane są
+      # tylko dane tworzone przez witrynę.
+      - wp_uploads:/var/www/html/wp-content/uploads
+      - wp_plugins:/var/www/html/wp-content/plugins
+      - wp_themes:/var/www/html/wp-content/themes
+      - wp_languages:/var/www/html/wp-content/languages
+      - wp_upgrade:/var/www/html/wp-content/upgrade
+    expose:
+      - "80"
+    depends_on:
+      wp_db:
+        condition: service_healthy
+    networks:
+      # Sieć Traefika w Dokploy - wymagana, żeby domena kierowała ruch do
+      # kontenera i żeby działało rozwiązywanie nazwy dokploy-traefik.
+      - dokploy-network
+      - internal
+
+  wp_db:
+    image: mysql:8.4
+    restart: unless-stopped
+    volumes:
+      - wp_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "exit | mysql -h localhost -P 3306 -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+
+volumes:
+  wp_uploads:
+  wp_plugins:
+  wp_themes:
+  wp_languages:
+  wp_upgrade:
+  wp_data:
+
+networks:
+  dokploy-network:
+    external: true
+  internal:
